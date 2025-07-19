@@ -3,4 +3,4 @@
 Useful Docker Compose to build project infrastructure on the fly.
 
 - Kafka
-- Nginx + PostgreSQL
+- Navidrome + Nginx + PostgreSQL
