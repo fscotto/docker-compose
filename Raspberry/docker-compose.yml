@@ -43,6 +43,7 @@ services:
       - "/opt/npm/letsencrypt:/etc/letsencrypt"
     networks:
       - web
+      - gitea
 
   navidromedb:
     image: postgres:13
@@ -64,8 +65,27 @@ services:
     secrets:
       - postgres_root_password # This name refers to the secret defined at the bottom
 
+  gitea:
+    image: docker.gitea.com/gitea:1.25.2
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    networks:
+      - gitea
+    volumes:
+      - ./gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "222:22"
+
 networks:
   web:
+    external: false
+  gitea:
     external: false
 
 # --- Docker Secrets Definition ---
