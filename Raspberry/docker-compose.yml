@@ -69,8 +69,8 @@ services:
     image: docker.gitea.com/gitea:1.25.2
     container_name: gitea
     environment:
-      - USER_UID=1000
-      - USER_GID=1000
+      - USER_UID=1100
+      - USER_GID=1100
     restart: always
     networks:
       - gitea
@@ -78,9 +78,10 @@ services:
       - /opt/gitea/data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - /home/git/.ssh:/data/git/.ssh
     ports:
       - "3000:3000"
-      - "222:22"
+      - "127.0.0.1:222:22"
 
 networks:
   web:
