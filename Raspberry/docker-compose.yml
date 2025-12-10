@@ -83,6 +83,66 @@ services:
       - "3000:3000"
       - "127.0.0.1:222:22"
 
+  synapse-db:
+    image: postgres:15
+    container_name: synapse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD_FILE: /run/secrets/synapse_db_password
+    volumes:
+      - synapse_db_data:/var/lib/postgresql/data
+    secrets:
+      - synapse_db_password
+    networks:
+      - web
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: synapse
+    restart: unless-stopped
+    depends_on:
+      - synapse-db
+    environment:
+      SYNAPSE_SERVER_NAME: "matrix.fscotto.duckdns.org"
+      SYNAPSE_REPORT_STATS: "no"
+      SYNAPSE_NO_TLS: "true"
+      POSTGRES_PASSWORD_FILE: /run/secrets/synapse_db_password
+      SYNAPSE_CONFIG_DIR: /data
+    volumes:
+      - synapse_data:/data
+    expose:
+      - "8008"
+    secrets:
+      - synapse_db_password
+    networks:
+      - web
+
+  coturn:
+    image: instrumentisto/coturn
+    container_name: coturn
+    restart: unless-stopped
+    volumes:
+      - ./turnserver.conf:/etc/turnserver.conf:ro
+    networks:
+      - web
+    expose:
+      - "3478/udp"
+      - "3478/tcp"
+      - "49152-49200/udp"
+
+  element-web:
+    image: vectorim/element-web:latest
+    container_name: element-web
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - element_web_config:/app/config
+    networks:
+      - web
+
 networks:
   web:
     external: false
@@ -96,3 +156,11 @@ secrets:
 
   postgres_root_password: # This name is referenced by the 'navidromedb' service
     file: ./postgres_root_password.txt # Path to your secret file on the host
+
+  synapse_db_password: # This name is referenced by the 'synapse' service
+    file: ./synapse_db_password.txt # Path to your secret file on the host
+
+volumes:
+  synapse_db_data:
+  synapse_data:
+  element_web_config:
